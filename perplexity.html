@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NLP Perplexity Calculator</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Arial;
+            background: linear-gradient(120deg, #89f7fe, #66a6ff);
+            min-height: 100vh;
+        }
+
+        .box {
+            width: 500px;
+            margin: 40px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            height: 90px;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .radio-group {
+            margin: 10px 0;
+        }
+
+        button {
+            width: 48%;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .calc {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .reset {
+            background: #f44336;
+            color: white;
+            float: right;
+        }
+
+        .output {
+            margin-top: 15px;
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f9f9f9;
+            font-size: 14px;
+        }
+
+        .tag {
+            background: #e0f2ff;
+            padding: 5px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 4px 0;
+        }
+
+        .grams {
+            font-family: monospace;
+            background: #fff;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px dashed #aaa;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>NLP Perplexity Calculator</h2>
+
+    <label>Enter Sentence:</label>
+    <textarea id="sentence" placeholder="Type a sentence here..."></textarea>
+
+    <div class="radio-group">
+        <input type="radio" name="model" value="bigram" checked> Bigram Model
+        <input type="radio" name="model" value="trigram"> Trigram Model
+    </div>
+
+    <button class="calc" onclick="calculate()">Calculate</button>
+    <button class="reset" onclick="resetAll()">Reset</button>
+
+    <div class="output" id="result">
+        Output will appear here
+    </div>
+</div>
+
+<script>
+function calculate() {
+    let sentence = document.getElementById("sentence").value.trim().toLowerCase();
+    let result = document.getElementById("result");
+
+    if (sentence === "") {
+        result.innerHTML = "⚠️ Please enter a sentence.";
+        return;
+    }
+
+    let model = document.querySelector('input[name="model"]:checked').value;
+    let words = sentence.split(/\s+/);
+
+    let n = (model === "bigram") ? 2 : 3;
+    let grams = [];
+
+    for (let i = 0; i <= words.length - n; i++) {
+        grams.push(words.slice(i, i + n).join(" "));
+    }
+
+    if (grams.length === 0) {
+        result.innerHTML = "⚠️ Sentence too short for selected model.";
+        return;
+    }
+
+    let prob = 1 / words.length;   // simplified probability
+    let logSum = grams.length * Math.log2(prob);
+    let perplexity = Math.pow(2, -logSum / grams.length);
+
+    result.innerHTML = `
+        <div class="tag"><b>Model:</b> ${model.toUpperCase()}</div><br>
+        <div class="tag"><b>Total Tokens:</b> ${words.length}</div><br>
+        <div class="tag"><b>${model} count:</b> ${grams.length}</div><br>
+        <div class="tag"><b>Perplexity:</b> ${perplexity.toFixed(4)}</div><br><br>
+
+        <b>Formula Used:</b><br>
+        PP = 2<sup>−(1/N) Σ log₂ P(w)</sup><br><br>
+
+        <b>Generated ${model}s:</b>
+        <div class="grams">${grams.join(" | ")}</div>
+    `;
+}
+
+function resetAll() {
+    document.getElementById("sentence").value = "";
+    document.getElementById("result").innerHTML = "Output will appear here";
+}
+</script>
+
+</body>
+</html>
